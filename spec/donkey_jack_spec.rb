@@ -1,18 +1,21 @@
 require "rspec"
 
 class Promise
-  attr_reader :value, :reason, :fulfillments
+  attr_reader :value, :reason, :fulfillments, :rejections
 
-  def initialize(state: :pending, value: nil, reason: nil, fulfillments: [])
+  def initialize(state: :pending, value: nil, reason: nil, fulfillments: [], rejections: [])
     @state = state
     @value = value
     @reason = reason
     @fulfillments = fulfillments
+    @rejections = rejections
   end
 
-  def then(fulfillment=nil)
-    fullfilments = self.fulfillments + [fulfillment]
-    Promise.new(state: @state, fulfillments: fullfilments)
+  def then(*callbacks)
+    fulfillment, rejection = callbacks
+    fulfillments = self.fulfillments + [fulfillment]
+    rejections = self.rejections + [rejection]
+    Promise.new(state: @state, fulfillments: fulfillments.zip, rejections: rejections.zip)
   end
 
   def fulfill(value)
@@ -89,6 +92,11 @@ describe "A Promise" do
     it "for when the promise is fulfilled" do
       t = promise.then(-> {})
       expect(t.fulfillments.size).to eq 1
+    end
+
+    it "for when the promise is rejected" do
+      t = promise.then(nil, -> {})
+      expect(t.rejections.size).to eq 1
     end
   end
 end
