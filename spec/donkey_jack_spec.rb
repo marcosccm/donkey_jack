@@ -3,13 +3,14 @@ require "rspec"
 class Promise
   attr_reader :value
 
-  def initialize(state: :pending)
+  def initialize(state: :pending, value: nil)
     @state = state
+    @value = value
   end
 
-  def fulfill
+  def fulfill(value)
     return self unless pending?
-    Promise.new(state: :fulfilled)
+    Promise.new(state: :fulfilled, value: value)
   end
 
   def reject
@@ -44,16 +45,20 @@ describe "A Promise" do
     end
 
     it "can be fulfilled" do
-      fulfilled = promise.fulfill
+      fulfilled = promise.fulfill("some value")
       expect(fulfilled).to be_fulfilled
     end
   end
 
   context "when fulfilled" do
-    let(:fulfilled) { Promise.new(state: :fulfilled) }
+    it "has a value" do
+      promise = Promise.new
+      fulfilled = promise.fulfill(4)
+      expect(fulfilled.value).to eq 4
+    end
 
     it "can't be rejected" do
-      promise = fulfilled.reject
+      promise = Promise.new(state: :fulfilled).reject
       expect(promise).to_not be_rejected
     end
   end
@@ -62,7 +67,7 @@ describe "A Promise" do
     let(:rejected) { Promise.new(state: :rejected) }
 
     it "can't be fulfilled" do
-      promise = rejected.fulfill
+      promise = rejected.fulfill("some value")
       expect(promise).to_not be_fulfilled
     end
   end
