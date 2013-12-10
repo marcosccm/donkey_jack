@@ -20,6 +20,7 @@ class Promise
 
   def fulfill(value)
     return self unless pending?
+    fulfillments.each { |f| f.call(value) }
     Promise.new(state: :fulfilled, value: value)
   end
 
@@ -103,6 +104,15 @@ describe "A Promise" do
       t = promise.then
       expect(t.fulfillments.size).to eq 0
       expect(t.rejections.size).to eq 0
+    end
+  end
+
+  describe "a fulfillment callback" do
+    it "is called when the promise is fulfilled, with the promise's value as an argument" do
+      cb = double
+      expect(cb).to receive(:call).with(4)
+
+      p = Promise.new.then(cb).fulfill(4)
     end
   end
 end
