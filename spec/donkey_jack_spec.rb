@@ -15,7 +15,7 @@ class Promise
     fulfillment, rejection = callbacks
     fulfillments = self.fulfillments + [fulfillment]
     rejections = self.rejections + [rejection]
-    Promise.new(state: @state, fulfillments: fulfillments.zip, rejections: rejections.zip)
+    Promise.new(state: @state, fulfillments: fulfillments.compact, rejections: rejections.compact)
   end
 
   def fulfill(value)
@@ -97,6 +97,12 @@ describe "A Promise" do
     it "for when the promise is rejected" do
       t = promise.then(nil, -> {})
       expect(t.rejections.size).to eq 1
+    end
+
+    it "but they are optional" do
+      t = promise.then
+      expect(t.fulfillments.size).to eq 0
+      expect(t.rejections.size).to eq 0
     end
   end
 end
