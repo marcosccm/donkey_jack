@@ -1,12 +1,18 @@
 require "rspec"
 
 class Promise
-  attr_reader :value, :reason
+  attr_reader :value, :reason, :fulfillments
 
-  def initialize(state: :pending, value: nil, reason: nil)
+  def initialize(state: :pending, value: nil, reason: nil, fulfillments: [])
     @state = state
     @value = value
     @reason = reason
+    @fulfillments = fulfillments
+  end
+
+  def then(fulfillment=nil)
+    fullfilments = self.fulfillments + [fulfillment]
+    Promise.new(state: @state, fulfillments: fullfilments)
   end
 
   def fulfill(value)
@@ -74,6 +80,15 @@ describe "A Promise" do
     it "can't be fulfilled" do
       promise = Promise.new(state: :rejected).fulfill("some value")
       expect(promise).to_not be_fulfilled
+    end
+  end
+
+  describe "callbacks can be attached to a promise" do
+    let(:promise) { Promise.new }
+
+    it "for when the promise is fulfilled" do
+      t = promise.then(-> {})
+      expect(t.fulfillments.size).to eq 1
     end
   end
 end
