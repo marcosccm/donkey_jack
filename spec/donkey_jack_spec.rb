@@ -10,6 +10,7 @@ class Promise
   end
 
   def reject
+    return self unless pending?
     Promise.new(:rejected)
   end
 
@@ -42,6 +43,14 @@ describe "A Promise" do
     it "can be fulfilled" do
       fulfilled = promise.fulfill
       expect(fulfilled).to be_fulfilled
+    end
+  end
+
+  context "when fulfilled" do
+    let(:fulfilled) { Promise.new(:fulfilled) }
+    it "can't be rejected" do
+      promise = fulfilled.reject
+      expect(promise).to_not be_rejected
     end
   end
 end
