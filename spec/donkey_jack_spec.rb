@@ -20,19 +20,27 @@ class Promise
   def rejected?
     @state == :rejected
   end
+
+  def pending?
+    @state == :pending
+  end
 end
 
 describe "A Promise" do
   context "when pending" do
+    let(:promise) { Promise.new }
+
+    it "is marked as pending" do
+      expect(promise).to be_pending
+    end
+
     it "can be rejected" do
-      p = Promise.new
-      rejected = p.reject
+      rejected = promise.reject
       expect(rejected).to be_rejected
     end
 
     it "can be fulfilled" do
-      p = Promise.new
-      fulfilled = p.fulfill
+      fulfilled = promise.fulfill
       expect(fulfilled).to be_fulfilled
     end
   end
