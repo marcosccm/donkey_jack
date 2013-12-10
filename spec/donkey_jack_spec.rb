@@ -1,11 +1,12 @@
 require "rspec"
 
 class Promise
-  attr_reader :value
+  attr_reader :value, :reason
 
-  def initialize(state: :pending, value: nil)
+  def initialize(state: :pending, value: nil, reason: nil)
     @state = state
     @value = value
+    @reason = reason
   end
 
   def fulfill(value)
@@ -13,9 +14,9 @@ class Promise
     Promise.new(state: :fulfilled, value: value)
   end
 
-  def reject
+  def reject(reason)
     return self unless pending?
-    Promise.new(state: :rejected)
+    Promise.new(state: :rejected, reason: reason)
   end
 
   def fulfilled?
@@ -40,7 +41,7 @@ describe "A Promise" do
     end
 
     it "can be rejected" do
-      rejected = promise.reject
+      rejected = promise.reject("some reason")
       expect(rejected).to be_rejected
     end
 
@@ -58,16 +59,20 @@ describe "A Promise" do
     end
 
     it "can't be rejected" do
-      promise = Promise.new(state: :fulfilled).reject
+      promise = Promise.new(state: :fulfilled).reject("some reason")
       expect(promise).to_not be_rejected
     end
   end
 
   context "when rejected" do
-    let(:rejected) { Promise.new(state: :rejected) }
+    it "has a reason" do
+      promise = Promise.new
+      rejected = promise.reject("fail")
+      expect(rejected.reason).to eq "fail"
+    end
 
     it "can't be fulfilled" do
-      promise = rejected.fulfill("some value")
+      promise = Promise.new(state: :rejected).fulfill("some value")
       expect(promise).to_not be_fulfilled
     end
   end
